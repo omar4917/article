@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Admin panel for The Pitch Report — manage and publish articles.">
+  <title>Admin — The Pitch Report</title>
+  <link rel="stylesheet" href="site.css">
+  <style>
+    .split-admin-editor {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 1.5rem;
+    }
+    @media (max-width: 992px) {
+      .split-admin-editor {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════ NAV ═══════ -->
+  <nav class="site-nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <div class="nav-logo-icon">PR</div>
+        The Pitch Report
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html" id="nav-home">Home</a></li>
+        <li><a href="admin.html" class="nav-admin-link active">⚙ Admin</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ═══════ AUTH GATE ═══════ -->
+  <div id="auth-gate" class="admin-login-gate">
+    <h2>🔒 Admin Access</h2>
+    <p>Enter your credentials to manage articles.</p>
+    <div class="form-group">
+      <input type="email" class="form-control" id="admin-email" placeholder="Email" value="admin@pitchreport.com">
+    </div>
+    <div class="form-group">
+      <input type="password" class="form-control" id="admin-password" placeholder="Password">
+    </div>
+    <button class="btn btn-primary" id="login-btn" style="width:100%;">Unlock Panel</button>
+    <p style="font-size:0.75rem;color:var(--text-dim);margin-top:1rem;" id="auth-hint">
+      Default: <strong>admin@pitchreport.com</strong> / <strong>admin</strong>
+    </p>
+  </div>
+
+  <!-- ═══════ ADMIN PANEL (hidden until auth) ═══════ -->
+  <div class="admin-container" id="admin-area" style="display:none;">
+
+    <div class="admin-header">
+      <h1>📰 Article Manager</h1>
+      <button class="btn btn-secondary" id="logout-btn">🔓 Lock Panel</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="admin-stats">
+      <div class="stat-card">
+        <div class="stat-number" id="stat-total">0</div>
+        <div class="stat-label">Published</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="stat-drafts" style="color:var(--color-warning);">0</div>
+        <div class="stat-label">Drafts</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="stat-categories" style="color:var(--color-blue);">0</div>
+        <div class="stat-label">Categories</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="admin-tab-bar">
+      <button class="admin-tab active" data-tab="new-post">✏️ New Post</button>
+      <button class="admin-tab" data-tab="manage">📁 Manage Posts</button>
+    </div>
+
+    <!-- TAB: New Post -->
+    <div class="admin-panel active" id="panel-new-post">
+      <div class="split-admin-editor">
+        
+        <!-- Left Side: Content -->
+        <div>
+          <div class="admin-card">
+            <div class="admin-card-title">Article Body (Markdown)</div>
+            <div class="admin-card-subtitle">Write or paste your article content in Markdown.</div>
+            <div class="md-tab-bar">
+              <button class="md-tab active" id="md-tab-edit">✏️ Edit</button>
+              <button class="md-tab" id="md-tab-preview">👁 Preview</button>
+            </div>
+            <textarea class="form-control md-editor" id="markdown-input" rows="18"
+              placeholder="# Your Article Title&#10;&#10;Start writing in Markdown..."></textarea>
+            <div class="md-preview" id="markdown-preview-area" style="display:none;"></div>
+          </div>
+        </div>
+
+        <!-- Right Side: Metadata -->
+        <div>
+          <div class="admin-card">
+            <div class="admin-card-title">Article Details</div>
+            <div class="form-group">
+              <label class="form-label">Title</label>
+              <input type="text" class="form-control" id="article-title" placeholder="Article title">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <select class="form-control" id="article-category">
+                <option value="News">📰 News</option>
+                <option value="Opinion">💬 Opinion</option>
+                <option value="Analysis">📊 Analysis</option>
+                <option value="Debates">🔥 Debates</option>
+                <option value="Transfers">💰 Transfers</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Author</label>
+              <input type="text" class="form-control" id="article-author" placeholder="Author name" value="Editor">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Excerpt (optional)</label>
+              <textarea class="form-control" id="article-excerpt" rows="3" placeholder="Short description…"></textarea>
+            </div>
+            <div class="form-group" style="display:flex;gap:0.75rem;">
+              <button class="btn btn-primary" id="publish-btn" style="flex:1;">🚀 Publish</button>
+              <button class="btn btn-secondary" id="draft-btn" style="flex:1;">💾 Save Draft</button>
+            </div>
+            <input type="hidden" id="editing-article-id" value="">
+            <button class="btn btn-secondary" id="cancel-edit-btn" style="width:100%;display:none;margin-top:0.5rem;">✕ Cancel Edit</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: Manage Posts -->
+    <div class="admin-panel" id="panel-manage">
+      <div class="admin-card">
+        <div class="admin-card-title">All Articles</div>
+        <div class="posts-table-container">
+          <table class="posts-table" id="posts-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="posts-tbody"></tbody>
+          </table>
+          <div class="posts-empty" id="posts-empty" style="display:none;">
+            <p>No articles yet. Create your first one!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="markdown-parser.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
